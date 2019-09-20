@@ -12,7 +12,7 @@ exports.sourceNodes = async (
     projectId: configOptions.projectId,
   });
 
-  // await handleTypeCreation();
+  await handleTypeCreation();
   await handleNodeCreation();
 
   /**
