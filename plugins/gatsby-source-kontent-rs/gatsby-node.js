@@ -40,7 +40,6 @@ exports.sourceNodes = async (
     const response = await client.items().toPromise();
     response.items.forEach(item => {
       const itemNode = createItemNode(createContentDigest, createNodeId, item);
-      console.log(itemNode);
       createNode(itemNode);
     });
   }
@@ -65,6 +64,12 @@ function createBaseTypes(schema) {
       name: String!
       type: String!
     }
+
+    type KontentTextElement @dontInfer {
+      name: String!
+      type: String!
+      value: String!
+    }
   `;
 
   return typeDefs;
@@ -77,9 +82,26 @@ function createBaseTypes(schema) {
  * @param {KontentDelivery.ContentItem} item
  */
 function createItemNode(createContentDigest, createNodeId, item) {
+  // Get all keys where the property has a "type" property.
+  const elementPropertyKeys = Object.keys(item)
+    .filter(key => item[key] && item[key].type)
+    // For now we only want to support TextElement for testing. Ignore all others.
+    .filter(key => item[key].type === 'text');
+
+  // Create object with only element keys.
+  const elements = {};
+
+  elementPropertyKeys.forEach(key => {
+    const fieldName = getGraphFieldName(key);
+    elements[fieldName] = Object.assign({}, item[key]);
+  });
+
   const nodeData = {
     system: Object.assign({}, item.system),
+    elements: elements,
   };
+
+  console.log(nodeData);
 
   const nodeContent = JSON.stringify(nodeData);
 
@@ -173,7 +195,7 @@ function getGraphQLScalarType(elementType) {
       return 'String';
 
     case 'text':
-      return 'String';
+      return 'KontentTextElement';
 
     case 'url_slug':
       return 'String';
