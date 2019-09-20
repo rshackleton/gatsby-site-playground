@@ -162,7 +162,7 @@ function createTypeDef(schema, type) {
  * @param {String} typeName
  */
 function getGraphTypeName(typeName) {
-  return `Kontent${changeCase.pascalCase(typeName)}`;
+  return `KontentItem${changeCase.pascalCase(typeName)}`;
 }
 
 /**
