@@ -1,24 +1,21 @@
 {
-  "name": "gatsby-starter-default",
+  "name": "gatsby-site-playground",
   "private": true,
-  "description": "A simple starter to get up and developing quickly with Gatsby",
+  "description": "A Gatbsy site used to try out ideas and features.",
   "version": "0.1.0",
-  "author": "Kyle Mathews <mathews.kyle@gmail.com>",
+  "author": "Richard Shackleton <rshackleton@live.co.uk>",
   "dependencies": {
+    "@kentico/kontent-delivery": "^7.0.0",
+    "change-case": "^3.1.0",
+    "dotenv": "^8.1.0",
     "gatsby": "^2.15.19",
-    "gatsby-image": "^2.2.20",
-    "gatsby-plugin-manifest": "^2.2.18",
-    "gatsby-plugin-offline": "^3.0.8",
-    "gatsby-plugin-react-helmet": "^3.1.8",
-    "gatsby-plugin-sharp": "^2.2.25",
-    "gatsby-source-filesystem": "^2.1.25",
-    "gatsby-transformer-sharp": "^2.2.16",
     "prop-types": "^15.7.2",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-helmet": "^5.2.1"
   },
   "devDependencies": {
+    "eslint": "^6.4.0",
     "prettier": "^1.18.2"
   },
   "keywords": [
@@ -35,9 +32,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gatsbyjs/gatsby-starter-default"
+    "url": "https://github.com/rshackleton/gatsby-site-playground"
   },
   "bugs": {
-    "url": "https://github.com/gatsbyjs/gatsby/issues"
+    "url": "https://github.com/rshackleton/gatsby-site-playground/issues"
   }
 }
