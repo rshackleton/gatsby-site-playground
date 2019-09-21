@@ -121,6 +121,24 @@ function createBaseTypes(schema) {
       name: String!
       type: String!
       value: String
+      images: [KontentRichTextImage]
+      links: [KontentRichTextLink]
+      linkedItems: [KontentItem] @link(by: "system.codename")
+    }
+
+    type KontentRichTextImage @infer {
+      description: String
+      height: Int!
+      imageId: String!
+      url: String!
+      width: Int!
+    }
+
+    type KontentRichTextLink @infer {
+      codename: String!
+      linkId: String!
+      type: String!
+      urlSlug: String!
     }
 
     type KontentTaxonomyElement implements KontentElement @infer {
@@ -168,19 +186,31 @@ function createItemNode(createContentDigest, createNodeId, item) {
     const fieldName = getGraphFieldName(key);
     let fieldValue;
 
-    if (item[key].type === 'modular_content') {
-      // Transform modular content fields to support linking.
-      const elementValue = item[key];
+    const elementValue = item[key];
 
+    if (elementValue.type === 'modular_content') {
+      // Transform modular content fields to support linking.
       fieldValue = {
-        rawData: elementValue.rawData,
-        type: elementValue.type,
         name: elementValue.name,
+        type: elementValue.type,
         value: elementValue.itemCodenames,
       };
+    } else if (elementValue.type === 'rich_text') {
+      // Transform rich text fields to support linking.
+      fieldValue = {
+        images: elementValue.images,
+        linkedItems: elementValue.linkedItemCodenames,
+        links: elementValue.links,
+        name: elementValue.name,
+        type: elementValue.type,
+        value: elementValue.value,
+      };
     } else {
-      fieldValue = item[key];
+      fieldValue = elementValue;
     }
+
+    // Remove the raw data field.
+    delete fieldValue.rawData;
 
     return Object.assign(acc, { [fieldName]: fieldValue });
   }, {});
