@@ -252,7 +252,7 @@ function createTypeDef(schema, type) {
 
     return Object.assign(acc, {
       [fieldName]: {
-        type: getGraphQLScalarType(element.type),
+        type: getElementValueType(element.type),
       },
     });
   }, {});
@@ -277,11 +277,11 @@ function createTypeDef(schema, type) {
 }
 
 /**
- * Return fully qualified GraphQL type name.
- * @param {String} typeName
+ * Return appropriate GraphQL type for Kontent element type.
+ * @param {String} elementType
  */
-function getGraphTypeName(typeName) {
-  return `KontentItem${changeCase.pascalCase(typeName)}`;
+function getElementValueType(elementType) {
+  return `Kontent${changeCase.pascalCase(elementType)}Element`;
 }
 
 /**
@@ -293,13 +293,11 @@ function getGraphFieldName(elementName) {
 }
 
 /**
- * Return appropriate GraphQL type for Kontent element type.
- * @param {String} elementType
+ * Return fully qualified GraphQL type name.
+ * @param {String} typeName
  */
-function getGraphQLScalarType(elementType) {
-  const fieldType = `Kontent${changeCase.pascalCase(elementType)}Element`;
-
-  return fieldType;
+function getGraphTypeName(typeName) {
+  return `KontentItem${changeCase.pascalCase(typeName)}`;
 }
 
 /**
