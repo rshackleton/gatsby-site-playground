@@ -1,5 +1,6 @@
 const KontentDelivery = require('@kentico/kontent-delivery');
 const changeCase = require('change-case');
+const unionBy = require('lodash/unionBy');
 
 exports.sourceNodes = async (
   { actions, createContentDigest, createNodeId, schema },
@@ -38,7 +39,14 @@ exports.sourceNodes = async (
   async function handleNodeCreation() {
     // Create nodes for all Kontent items.
     const response = await client.items().toPromise();
-    response.items.forEach(item => {
+
+    const allItems = unionBy(
+      response.items,
+      response.linkedItems,
+      'system.codename',
+    );
+
+    allItems.forEach(item => {
       const itemNode = createItemNode(createContentDigest, createNodeId, item);
       createNode(itemNode);
     });
