@@ -33,7 +33,7 @@ exports.sourceNodes = async (
   }
 
   /**
-   * Handles creating Gatbsy nodes for all content items.
+   * Handles creating Gatsby nodes for all content items.
    */
   async function handleNodeCreation() {
     // Create nodes for all Kontent items.
@@ -56,6 +56,11 @@ function createBaseTypes(schema) {
       system: KontentItemSystem!
     }
 
+    interface KontentElement @dontInfer {
+      name: String!
+      type: String!
+    }
+
     type KontentItemSystem @dontInfer {
       codename: String!
       id: String!
@@ -65,10 +70,65 @@ function createBaseTypes(schema) {
       type: String!
     }
 
-    type KontentTextElement @dontInfer {
+    type KontentAsset @dontInfer {
+      name: String!
+      description: String
+      type: String!
+      size: Int!
+      url: String!
+      width: Int!
+      height: Int!
+    }
+
+    type KontentAssetElement implements KontentElement @dontInfer {
       name: String!
       type: String!
-      value: String!
+      value: [KontentAsset]
+    }
+
+    type KontentDateTimeElement implements KontentElement @dontInfer {
+      name: String!
+      type: String!
+      value: Date @dateformat
+    }
+
+    type KontentModularContentElement implements KontentElement @dontInfer {
+      name: String!
+      type: String!
+    }
+
+    type KontentMultipleChoiceElement implements KontentElement @dontInfer {
+      name: String!
+      type: String!
+    }
+
+    type KontentNumberElement implements KontentElement @dontInfer {
+      name: String!
+      type: String!
+      value: Float
+    }
+
+    type KontentRichTextElement implements KontentElement @dontInfer {
+      name: String!
+      type: String!
+      value: String
+    }
+
+    type KontentTaxonomyElement implements KontentElement @dontInfer {
+      name: String!
+      type: String!
+    }
+
+    type KontentTextElement implements KontentElement @dontInfer {
+      name: String!
+      type: String!
+      value: String
+    }
+
+    type KontentUrlSlugElement implements KontentElement @dontInfer {
+      name: String!
+      type: String!
+      value: String
     }
   `;
 
@@ -83,27 +143,24 @@ function createBaseTypes(schema) {
  */
 function createItemNode(createContentDigest, createNodeId, item) {
   // Get all keys where the property has a "type" property.
-  const elementPropertyKeys = Object.keys(item)
-    .filter(key => item[key] && item[key].type)
-    // For now we only want to support TextElement for testing. Ignore all others.
-    .filter(key => item[key].type === 'text');
+  const elementPropertyKeys = Object.keys(item).filter(
+    key => item[key] && item[key].type,
+  );
 
   // Create object with only element keys.
-  const elements = {};
-
-  elementPropertyKeys.forEach(key => {
+  const elements = elementPropertyKeys.reduce((acc, key) => {
     const fieldName = getGraphFieldName(key);
-    elements[fieldName] = Object.assign({}, item[key]);
-  });
+    return Object.assign(acc, { [fieldName]: item[key] });
+  }, {});
 
-  const nodeData = {
-    system: Object.assign({}, item.system),
+  let nodeData = {
+    system: item.system,
     elements: elements,
   };
 
-  console.log(nodeData);
-
-  const nodeContent = JSON.stringify(nodeData);
+  // Gatsby is not a fan of dealing with types vs plain objects
+  // so we'll re-serialize the data to make plain ol' objects!
+  nodeData = JSON.parse(JSON.stringify(nodeData));
 
   const nodeMeta = {
     id: createNodeId(getNodeIdValue(nodeData)),
@@ -178,31 +235,9 @@ function getGraphFieldName(elementName) {
  * @param {String} elementType
  */
 function getGraphQLScalarType(elementType) {
-  switch (elementType) {
-    case 'asset':
-      return 'String';
+  const fieldType = `Kontent${changeCase.pascalCase(elementType)}Element`;
 
-    case 'date_time':
-      return 'Date';
-
-    case 'modular_content':
-      return 'String';
-
-    case 'rich_text':
-      return 'String';
-
-    case 'taxonomy':
-      return 'String';
-
-    case 'text':
-      return 'KontentTextElement';
-
-    case 'url_slug':
-      return 'String';
-
-    default:
-      return 'String';
-  }
+  return fieldType;
 }
 
 /**
