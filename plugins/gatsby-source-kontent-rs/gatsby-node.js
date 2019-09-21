@@ -61,7 +61,7 @@ function createBaseTypes(schema) {
       type: String!
     }
 
-    type KontentItemSystem @dontInfer {
+    type KontentItemSystem @infer {
       codename: String!
       id: String!
       language: String!
@@ -70,7 +70,7 @@ function createBaseTypes(schema) {
       type: String!
     }
 
-    type KontentAsset @dontInfer {
+    type KontentAsset @infer {
       name: String!
       description: String
       type: String!
@@ -80,52 +80,60 @@ function createBaseTypes(schema) {
       height: Int!
     }
 
-    type KontentAssetElement implements KontentElement @dontInfer {
+    type KontentAssetElement implements KontentElement @infer {
       name: String!
       type: String!
       value: [KontentAsset]
     }
 
-    type KontentDateTimeElement implements KontentElement @dontInfer {
+    type KontentDateTimeElement implements KontentElement @infer {
       name: String!
       type: String!
       value: Date @dateformat
     }
 
-    type KontentModularContentElement implements KontentElement @dontInfer {
+    type KontentModularContentElement implements KontentElement @infer {
+      name: String!
+      type: String!
+      value: [KontentItem] @link(by: "system.codename")
+    }
+
+    type KontentMultipleChoiceElement implements KontentElement @infer {
       name: String!
       type: String!
     }
 
-    type KontentMultipleChoiceElement implements KontentElement @dontInfer {
-      name: String!
-      type: String!
-    }
-
-    type KontentNumberElement implements KontentElement @dontInfer {
+    type KontentNumberElement implements KontentElement @infer {
       name: String!
       type: String!
       value: Float
     }
 
-    type KontentRichTextElement implements KontentElement @dontInfer {
+    type KontentRichTextElement implements KontentElement @infer {
       name: String!
       type: String!
       value: String
     }
 
-    type KontentTaxonomyElement implements KontentElement @dontInfer {
+    type KontentTaxonomyElement implements KontentElement @infer {
       name: String!
       type: String!
+      taxonomyGroup: String!
+      value: [KontentTaxonomyItem]
     }
 
-    type KontentTextElement implements KontentElement @dontInfer {
+    type KontentTaxonomyItem @infer {
+      name: String!
+      codename: String!
+    }
+
+    type KontentTextElement implements KontentElement @infer {
       name: String!
       type: String!
       value: String
     }
 
-    type KontentUrlSlugElement implements KontentElement @dontInfer {
+    type KontentUrlSlugElement implements KontentElement @infer {
       name: String!
       type: String!
       value: String
@@ -150,7 +158,23 @@ function createItemNode(createContentDigest, createNodeId, item) {
   // Create object with only element keys.
   const elements = elementPropertyKeys.reduce((acc, key) => {
     const fieldName = getGraphFieldName(key);
-    return Object.assign(acc, { [fieldName]: item[key] });
+    let fieldValue;
+
+    if (item[key].type === 'modular_content') {
+      // Transform modular content fields to support linking.
+      const elementValue = item[key];
+
+      fieldValue = {
+        rawData: elementValue.rawData,
+        type: elementValue.type,
+        name: elementValue.name,
+        value: elementValue.itemCodenames,
+      };
+    } else {
+      fieldValue = item[key];
+    }
+
+    return Object.assign(acc, { [fieldName]: fieldValue });
   }, {});
 
   let nodeData = {
